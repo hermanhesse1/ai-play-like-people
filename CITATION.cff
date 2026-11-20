@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "Do AI agents play like people?"
+authors:
+  - family-names: Calin
+    given-names: Alexandru-Cristian
+repository-code: "https://github.com/hermanhesse1/ai-play-like-people"
+license: MIT
+references:
+  - type: article
+    title: "Capturing the complexity of human strategic decision-making with machine learning"
+    authors:
+      - family-names: Zhu
+        given-names: Jian-Qiao
+      - family-names: Peterson
+        given-names: Joshua C.
+      - family-names: Enke
+        given-names: Benjamin
+      - family-names: Griffiths
+        given-names: Thomas L.
+    journal: "Nature Human Behaviour"
+    year: 2025
+    doi: "10.1038/s41562-025-02230-5"
