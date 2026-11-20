@@ -1,8 +1,10 @@
 # Do AI agents play like people?
 
+[![tests](https://github.com/hermanhesse1/ai-play-like-people/actions/workflows/tests.yml/badge.svg)](https://github.com/hermanhesse1/ai-play-like-people/actions/workflows/tests.yml)
+
 Which artificial players reproduce human choices in one-shot 2×2 games, and in which kinds of games does each one fail?
 
-This repository compares classic game theory models, a neural network, reinforcement learning agents and language models against **93,460 human decisions in 2,416 game instances** (1,208 games, each seen from both players' sides) from Zhu, Peterson, Enke and Griffiths (2025).
+This repository compares classic game theory models (built), and in later stages a neural network, reinforcement learning agents and language models, against **93,460 human decisions in 2,416 game instances** (1,208 games, each seen from both players' sides) from Zhu, Peterson, Enke and Griffiths (2025).
 
 ## Status
 
@@ -17,7 +19,7 @@ This repository compares classic game theory models, a neural network, reinforce
 
 ```bash
 pip install -r requirements.txt
-python start_here.py   # the whole of stage 1 in one commented file (~10 s)
+python start_here.py   # the whole of stage 1 in one commented file (~10 s, synthetic data)
 make test              # 22 tests: textbook games, QRE branches, parameter recovery
 make synthetic         # full pipeline + figures on synthetic data from a known model (~1 min)
 make all               # the real run: tests, models, figures (needs data/games2p2k.csv, see data/README.md)
