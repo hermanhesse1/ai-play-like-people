@@ -129,8 +129,8 @@ def bootstrap(preds: dict[str, np.ndarray], data: GameData, B: int = 1000, seed:
 def completeness(table: pd.DataFrame, reference: str, random: str = "Random") -> pd.Series:
     """Share of the gap from random to the reference model that each model closes (MSE).
 
-    The 2025 paper sets random = 0% and its neural network = 100%. Until our
-    network exists, pass the best classic model or use completeness_to_floor.
+    The 2025 paper sets random = 0% and its neural network = 100%; pass
+    reference="Neural network" to match it (run_models.py does).
     """
     mse = table.set_index("model")["mse"]
     return 100 * (mse[random] - mse) / (mse[random] - mse[reference])

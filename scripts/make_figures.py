@@ -1,9 +1,10 @@
 """The three figures for the paper, built from one results file.
 
     python scripts/make_figures.py results/synthetic      # after make synthetic
+    python scripts/make_figures.py results/synthetic_prosocial
     python scripts/make_figures.py results/games2p2k      # after make classic
 
-Reads <folder>/oof_predictions.csv (written by run_classic.py: every game
+Reads <folder>/oof_predictions.csv (written by run_models.py: every game
 instance with each model's out-of-fold prediction) and writes, as PNG and PDF:
 
   fig1_scores            How much better than random play each model predicts
@@ -114,7 +115,7 @@ def save(fig, folder, name):
 
 def main():
     folder = Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "results" / "synthetic")
-    synthetic = folder.name == "synthetic"
+    synthetic = folder.name.startswith("synthetic")
     data, preds = load(folder)
     overall = improvement_table(preds, data)
     order = [m for m in overall.sort_values("gain", ascending=False).index if m != "Random"]
