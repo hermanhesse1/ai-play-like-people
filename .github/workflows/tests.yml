@@ -20,6 +20,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+      # The CPU-only build of PyTorch is much smaller than the default one,
+      # and the network is small enough that a GPU wouldn't help.
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: pip install -r requirements.txt
       - run: python -m pytest -q tests
       - name: Run the one-file version end to end

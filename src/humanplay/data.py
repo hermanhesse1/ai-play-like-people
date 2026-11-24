@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from .games import PAYOFF_COLUMNS, categorise, flip_perspective, pure_equilibria, split
+from .games import PAYOFF_COLUMNS, categorise, flip_perspective, pure_equilibria, sigmoid, split
 
 
 @dataclass
@@ -98,6 +98,32 @@ def both_perspectives(row_view: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
             np.concatenate([ids, ids]))
 
 
+class ProsocialMix:
+    """Synthetic truth with behaviour no classic model can express.
+
+    A share of players reason like the base model (e.g. cognitive hierarchy);
+    the rest are prosocial: they lean towards the action with the higher total
+    payoff for both players, averaged over the opponent's actions, with logit
+    precision lam. Equilibrium, QRE, level-k and CH all assume people care only
+    about their own payoff, so they cannot fit this part, but a flexible
+    network can learn it. Used to check that the network finds structure the
+    theories miss. Synthetic only: says nothing about real people.
+    """
+    name = "Prosocial mix"
+
+    def __init__(self, base, share: float = 0.3, lam: float = 0.15):
+        self.base, self.share, self.lam = base, share, lam
+
+    def predict(self, payoffs):
+        U, V = split(payoffs)
+        total = U + V
+        gain = (total[:, 0, :] - total[:, 1, :]).mean(axis=1)
+        return (1 - self.share) * self.base.predict(payoffs) + self.share * sigmoid(self.lam * gain)
+
+    def __repr__(self):
+        return f"{self.share:.0%} prosocial (lambda={self.lam:g}) + {1 - self.share:.0%} {self.base!r}"
+
+
 def simulate(model, n_games: int = 1208, mean_n: float = 38.7,
              extra_noise: float = 0.0, seed: int = 0) -> GameData:
     """Synthetic dataset whose choices come from a known model.
@@ -118,4 +144,5 @@ def simulate(model, n_games: int = 1208, mean_n: float = 38.7,
     return GameData(payoffs, n_a, n, ids, source=f"synthetic:{model.name}")
 
 
-__all__ = ["GameData", "load_csv", "generate_games", "both_perspectives", "simulate"]
+__all__ = ["GameData", "load_csv", "generate_games", "both_perspectives", "ProsocialMix",
+           "simulate"]

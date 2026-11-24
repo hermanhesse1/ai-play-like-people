@@ -4,15 +4,15 @@
 
 Which artificial players reproduce human choices in one-shot 2×2 games, and in which kinds of games does each one fail?
 
-This repository compares classic game theory models (built), and in later stages a neural network, reinforcement learning agents and language models, against **93,460 human decisions in 2,416 game instances** (1,208 games, each seen from both players' sides) from Zhu, Peterson, Enke and Griffiths (2025).
+This repository compares classic game theory models and a neural network (built), and in later stages reinforcement learning agents and language models, against **93,460 human decisions in 2,416 game instances** (1,208 games, each seen from both players' sides) from Zhu, Peterson, Enke and Griffiths (2025).
 
 ## Status
 
 | Stage | Players | State |
 |---|---|---|
 | 1 | Random, Nash, QRE, level-k, cognitive hierarchy | Built and tested on synthetic data; waiting for the human data |
-| 2 | Neural network (PyTorch) | Next |
-| 3 | Q-learning agents | Planned |
+| 2 | Neural network (PyTorch) | Built and tested on synthetic data; waiting for the human data |
+| 3 | Q-learning agents | Next |
 | 4 | Language models | Planned |
 
 ## Quick start
@@ -20,10 +20,14 @@ This repository compares classic game theory models (built), and in later stages
 ```bash
 pip install -r requirements.txt
 python start_here.py   # the whole of stage 1 in one commented file (~10 s, synthetic data)
-make test              # 22 tests: textbook games, QRE branches, parameter recovery
+make test              # 29 tests: textbook games, QRE branches, parameter recovery, the network
 make synthetic         # full pipeline + figures on synthetic data from a known model (~1 min)
+make prosocial         # synthetic data the theories can't describe: the network should win
 make all               # the real run: tests, models, figures (needs data/games2p2k.csv, see data/README.md)
+make classic           # stage 1 models only, no PyTorch needed
 ```
+
+PyTorch is in `requirements.txt`. The default install is large because it includes GPU support; the network is small, so the CPU-only build is enough and much smaller: run `pip install torch --index-url https://download.pytorch.org/whl/cpu` before installing the rest.
 
 `start_here.py` is the easiest way in: one file, only NumPy and SciPy, with a description at the top of what each step does. The package under `src/` is the same models split into modules, with bootstrap differences, CSV outputs and tests.
 
@@ -65,6 +69,25 @@ All players are scored the same way, so numbers are directly comparable.
 
 All are fitted by maximum likelihood of the observed counts.
 
+## The neural network (stage 2)
+
+The classic models each build in a theory of how people reason. The network builds in none: it sees the 8 payoffs of a game and outputs the probability of choosing A. If it predicts people better than every theory, the gap is behaviour the theories miss; if it does not, the theories already capture what is predictable. Zhu et al. (2025) use their network the same way, as the 100% mark of their "completeness" score, and the results table now reports that column too.
+
+| Choice | What we did | Why |
+|---|---|---|
+| Input | The 8 raw payoffs, standardised | No game theory features, so the network starts with no theory |
+| Network | 2 hidden layers of 32 units, ReLU, sigmoid output | Small: about 2,400 instances is little data for a network |
+| Loss | The same binomial likelihood as every other model | Scores stay directly comparable |
+| Overfitting | 20% of the training *games* held out; training stops when their loss stops improving; weight decay | Holding out whole games, not single rows, stops a game's other perspective from leaking into the check |
+| Ensemble | 5 networks from different random starts, averaged | Less sensitive to the random seed |
+
+Two synthetic checks show what the network can and cannot do (`tests/test_neural.py`):
+
+1. **Data from cognitive hierarchy** (`make synthetic`). The network gets close to the true model but does not beat it, which is expected: when a theory is exactly right, its 2 parameters use the data better than the network's 1,377 weights.
+2. **Data where 30% of players are prosocial** (`make prosocial`): they lean towards the action with the higher total payoff for both players. Every classic model assumes people care only about their own payoff, so none can fit this. The network does, and beats cognitive hierarchy clearly.
+
+Both are synthetic: they check that the method works, and say nothing about real people.
+
 ## Layout
 
 ```
@@ -72,10 +95,11 @@ src/humanplay/
   games.py          game representation, perspective flip, dominance, categories
   data.py           loading, synthetic games generated as in the paper
   evaluate.py       grouped CV, metrics, noise floor, bootstrap, breakdowns
-  models/           nash.py, qre.py, levelk.py (level-k and CH), base.py
+  models/           nash.py, qre.py, levelk.py (level-k and CH), neural.py, base.py
 scripts/
   prepare_data.py   decision-level OSF file -> canonical CSV
-  run_classic.py    fit and score the classic models
+  run_models.py     fit and score every model (--classic-only for stage 1 alone)
+  make_figures.py   the three figures
 tests/              pytest suite
 ```
 
